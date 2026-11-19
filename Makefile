@@ -8,7 +8,7 @@
 # On Windows CI (Git Bash), use cmd to run fvm.bat from PATH:
 # Example: make build ARGS="--target x86_64-pc-windows-msvc" FVM="cmd //c fvm"
 
-.PHONY: help setup setup-fvm setup-rust-tools setup-frb-codegen setup-android setup-web setup-fuzz codegen regen build build-android build-ios build-web run-example-web test-web test-example test-example-ci test-example-web doctor drive-example build-example coverage-example create-consumer package-example-android package-example-ios package-example-macos verify-example-coverage verify-example-library test coverage analyze format format-check get clean version get-version check-new-openmls-version check-upstream-advisories check-exists-openmls-frb-release check-template-updates update-template check-targets check-msrv third-party-notices verify-third-party-notices verify-frb-pins verify-pub-limits verify-feature-graph verify-android-alignment verify-release-artifacts verify-library-loads actionlint rust-audit rust-deny rust-check rust-check-ios rust-test rust-clippy rust-clippy-web rust-doc rust-geiger fuzz fuzz-list fuzz-seed doc publish publish-dry-run rust-update update-changelog update-evidence release-frb release setup-repo-protections
+.PHONY: build-push-ios push-xcframework help setup setup-fvm setup-rust-tools setup-frb-codegen setup-android setup-web setup-fuzz codegen regen build build-android build-ios build-web run-example-web test-web test-example test-example-ci test-example-web doctor drive-example build-example coverage-example create-consumer package-example-android package-example-ios package-example-macos verify-example-coverage verify-example-library test coverage analyze format format-check get clean version get-version check-new-openmls-version check-upstream-advisories check-exists-openmls-frb-release check-template-updates update-template check-targets check-msrv third-party-notices verify-third-party-notices verify-frb-pins verify-pub-limits verify-feature-graph verify-android-alignment verify-release-artifacts verify-library-loads actionlint rust-audit rust-deny rust-check rust-check-ios rust-test rust-clippy rust-clippy-web rust-doc rust-geiger fuzz fuzz-list fuzz-seed doc publish publish-dry-run rust-update update-changelog update-evidence release-frb release setup-repo-protections
 
 # FVM command - can be overridden to provide full path on Windows CI
 FVM ?= fvm
@@ -432,6 +432,32 @@ build-ios:
 	@$(forget_hook_results)
 	@echo ""
 	@echo "Build complete! Library at: rust/target/<triple>/release/"
+
+
+# The C API of push_ffi/ that the iOS notification service links, as an
+# XCFramework: device, and the two simulators in one fat library. Built with
+# the same deployment target as build-ios.
+PUSH_XCFRAMEWORK = push_ffi/target/OpenmlsPush.xcframework
+
+build-push-ios:
+	@echo "Building push_ffi for iOS..."
+	@DEPLOYMENT_TARGET=$$(sed -n "s/^ios_min_version: *'*\([0-9.]*\)'*/\1/p" .copier-answers.yml); \
+		IPHONEOS_DEPLOYMENT_TARGET=$$DEPLOYMENT_TARGET cargo build --release --manifest-path push_ffi/Cargo.toml \
+		$(foreach t,$(IOS_TARGETS),--target $(t)) $(ARGS)
+
+push-xcframework: build-push-ios
+	@rm -rf $(PUSH_XCFRAMEWORK) push_ffi/target/ios-sim
+	@mkdir -p push_ffi/target/ios-sim
+	lipo -create \
+		push_ffi/target/aarch64-apple-ios-sim/release/libopenmls_push.a \
+		push_ffi/target/x86_64-apple-ios/release/libopenmls_push.a \
+		-output push_ffi/target/ios-sim/libopenmls_push.a
+	xcodebuild -create-xcframework \
+		-library push_ffi/target/aarch64-apple-ios/release/libopenmls_push.a -headers push_ffi/include \
+		-library push_ffi/target/ios-sim/libopenmls_push.a -headers push_ffi/include \
+		-output $(PUSH_XCFRAMEWORK)
+	@echo ""
+	@echo "Built $(PUSH_XCFRAMEWORK)"
 
 build-web:
 	@echo "Building WASM for web..."

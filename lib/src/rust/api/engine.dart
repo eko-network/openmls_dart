@@ -8,9 +8,9 @@ import 'config.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'types.dart';
 
-// These functions are ignored because they are not marked as `pub`: `acquire_locks`, `apply_past_epoch_deletion`, `apply_past_epoch_policy`, `build_credential_with_key`, `commit`, `db`, `hex`, `key_package_capabilities`, `leaf_node_info`, `load_for_external_join`, `load_for_group`, `load_for_welcome`, `load_global`, `load_group`, `max_epochs_to_native`, `member_info`, `native_to_past_epoch_policy`, `new_group_error`, `own_private_message_error`, `process_inspected`, `proposal_info`, `proposal_type_of`, `sender_info`, `serialize_proposal_ref`, `staged_commit_info`, `unix_seconds_to_system_time`, `welcome_error`, `with_cap`
+// These functions are ignored because they are not marked as `pub`: `acquire_locks`, `apply_past_epoch_deletion`, `apply_past_epoch_policy`, `build_credential_with_key`, `commit_and_stash`, `commit`, `db`, `hex`, `key_package_capabilities`, `leaf_node_info`, `load_for_external_join`, `load_for_group`, `load_for_welcome`, `load_global`, `load_group`, `max_epochs_to_native`, `member_info`, `native_to_past_epoch_policy`, `new_group_error`, `own_private_message_error`, `process_inspected`, `process_message_into`, `proposal_info`, `proposal_type_of`, `sender_info`, `serialize_proposal_ref`, `staged_commit_info`, `unix_seconds_to_system_time`, `welcome_error`, `with_cap`
 // These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `OpLocks`, `OpSession`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `crypto`, `rand`, `storage`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `crypto`, `from`, `rand`, `storage`
 
 /// Extract the group ID from an MLS protocol message.
 ///
@@ -332,6 +332,10 @@ abstract class MlsEngine implements RustOpaqueInterface {
     int? maxPastEpochs,
   });
 
+  /// Delete the message stashed under `stashId`, once the application has
+  /// stored it. Deleting one that is not stashed does nothing.
+  Future<void> deleteStashedMessage({required String stashId});
+
   Future<MlsGroupContextInfo> exportGroupContext({
     required List<int> groupIdBytes,
   });
@@ -631,6 +635,28 @@ abstract class MlsEngine implements RustOpaqueInterface {
     required List<int> messageBytes,
   });
 
+  /// Process a message as `processMessage` does, and keep an application
+  /// message's plaintext under `stashId` until `deleteStashedMessage`.
+  ///
+  /// The plaintext is written in the same transaction as the ratchet that
+  /// deletes the message's key, so a process that ends right after — a
+  /// crash, or an operating system ending a background task — either still
+  /// has the key or has the plaintext. Without the stash a message would be
+  /// lost when the process ends between this and the application storing
+  /// it. Read it back with `stashedMessages`, store it, then delete it.
+  ///
+  /// Another process can also decrypt for the application this way, e.g. a
+  /// notification service while the app is not running.
+  ///
+  /// Fails, changing nothing, when `stashId` is already stashed. Commits and
+  /// proposals are processed as `processMessage` does, with nothing stashed.
+  /// The Web keeps no stash: there this is `processMessage`.
+  Future<ProcessedMessageResult> processMessageStashed({
+    required List<int> groupIdBytes,
+    required List<int> messageBytes,
+    required String stashId,
+  });
+
   Future<ProcessedMessageInspectResult> processMessageWithInspect({
     required List<int> groupIdBytes,
     required List<int> messageBytes,
@@ -837,6 +863,12 @@ abstract class MlsEngine implements RustOpaqueInterface {
     required List<int> groupIdBytes,
     required int maxEpochs,
   });
+
+  /// The message stashed under `stashId`, if any.
+  Future<StashedMessage?> stashedMessage({required String stashId});
+
+  /// Every stashed message, oldest first — see `processMessageStashed`.
+  Future<List<StashedMessage>> stashedMessages();
 
   Future<AddMembersResult> swapMembers({
     required List<int> groupIdBytes,
@@ -1322,4 +1354,39 @@ class ProposalResult {
           runtimeType == other.runtimeType &&
           proposalMessage == other.proposalMessage &&
           proposalRef == other.proposalRef;
+}
+
+/// An application message kept by `processMessageStashed`.
+class StashedMessage {
+  final String stashId;
+  final Uint8List groupId;
+
+  /// The sender's TLS-serialized credential, as MLS authenticated it.
+  /// Deserialize with `MlsCredential.deserialize()`.
+  final Uint8List senderCredential;
+  final Uint8List plaintext;
+
+  const StashedMessage({
+    required this.stashId,
+    required this.groupId,
+    required this.senderCredential,
+    required this.plaintext,
+  });
+
+  @override
+  int get hashCode =>
+      stashId.hashCode ^
+      groupId.hashCode ^
+      senderCredential.hashCode ^
+      plaintext.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is StashedMessage &&
+          runtimeType == other.runtimeType &&
+          stashId == other.stashId &&
+          groupId == other.groupId &&
+          senderCredential == other.senderCredential &&
+          plaintext == other.plaintext;
 }

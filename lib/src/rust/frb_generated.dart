@@ -69,7 +69,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => -1609538643;
+  int get rustContentHash => -128438248;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -234,6 +234,11 @@ abstract class RustLibApi extends BaseApi {
     required MlsEngine that,
     required List<int> groupIdBytes,
     int? maxPastEpochs,
+  });
+
+  Future<void> crateApiEngineMlsEngineDeleteStashedMessage({
+    required MlsEngine that,
+    required String stashId,
   });
 
   Future<MlsGroupContextInfo> crateApiEngineMlsEngineExportGroupContext({
@@ -456,6 +461,13 @@ abstract class RustLibApi extends BaseApi {
     required List<int> messageBytes,
   });
 
+  Future<ProcessedMessageResult> crateApiEngineMlsEngineProcessMessageStashed({
+    required MlsEngine that,
+    required List<int> groupIdBytes,
+    required List<int> messageBytes,
+    required String stashId,
+  });
+
   Future<ProcessedMessageInspectResult>
   crateApiEngineMlsEngineProcessMessageWithInspect({
     required MlsEngine that,
@@ -574,6 +586,15 @@ abstract class RustLibApi extends BaseApi {
     required MlsEngine that,
     required List<int> groupIdBytes,
     required int maxEpochs,
+  });
+
+  Future<StashedMessage?> crateApiEngineMlsEngineStashedMessage({
+    required MlsEngine that,
+    required String stashId,
+  });
+
+  Future<List<StashedMessage>> crateApiEngineMlsEngineStashedMessages({
+    required MlsEngine that,
   });
 
   Future<AddMembersResult> crateApiEngineMlsEngineSwapMembers({
@@ -1781,6 +1802,43 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(
         debugName: "MlsEngine_delete_past_epoch_secrets_without_timestamps",
         argNames: ["that", "groupIdBytes", "maxPastEpochs"],
+      );
+
+  @override
+  Future<void> crateApiEngineMlsEngineDeleteStashedMessage({
+    required MlsEngine that,
+    required String stashId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerMlsEngine(
+                that,
+              );
+          var arg1 = cst_encode_String(stashId);
+          return wire
+              .wire__crate__api__engine__MlsEngine_delete_stashed_message(
+                port_,
+                arg0,
+                arg1,
+              );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_unit,
+          decodeErrorData: dco_decode_String,
+        ),
+        constMeta: kCrateApiEngineMlsEngineDeleteStashedMessageConstMeta,
+        argValues: [that, stashId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiEngineMlsEngineDeleteStashedMessageConstMeta =>
+      const TaskConstMeta(
+        debugName: "MlsEngine_delete_stashed_message",
+        argNames: ["that", "stashId"],
       );
 
   @override
@@ -3275,6 +3333,49 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<ProcessedMessageResult> crateApiEngineMlsEngineProcessMessageStashed({
+    required MlsEngine that,
+    required List<int> groupIdBytes,
+    required List<int> messageBytes,
+    required String stashId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerMlsEngine(
+                that,
+              );
+          var arg1 = cst_encode_list_prim_u_8_loose(groupIdBytes);
+          var arg2 = cst_encode_list_prim_u_8_loose(messageBytes);
+          var arg3 = cst_encode_String(stashId);
+          return wire
+              .wire__crate__api__engine__MlsEngine_process_message_stashed(
+                port_,
+                arg0,
+                arg1,
+                arg2,
+                arg3,
+              );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_processed_message_result,
+          decodeErrorData: dco_decode_String,
+        ),
+        constMeta: kCrateApiEngineMlsEngineProcessMessageStashedConstMeta,
+        argValues: [that, groupIdBytes, messageBytes, stashId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiEngineMlsEngineProcessMessageStashedConstMeta =>
+      const TaskConstMeta(
+        debugName: "MlsEngine_process_message_stashed",
+        argNames: ["that", "groupIdBytes", "messageBytes", "stashId"],
+      );
+
+  @override
   Future<ProcessedMessageInspectResult>
   crateApiEngineMlsEngineProcessMessageWithInspect({
     required MlsEngine that,
@@ -4064,6 +4165,75 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(
         debugName: "MlsEngine_set_past_epoch_deletion_policy_max_epochs",
         argNames: ["that", "groupIdBytes", "maxEpochs"],
+      );
+
+  @override
+  Future<StashedMessage?> crateApiEngineMlsEngineStashedMessage({
+    required MlsEngine that,
+    required String stashId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerMlsEngine(
+                that,
+              );
+          var arg1 = cst_encode_String(stashId);
+          return wire.wire__crate__api__engine__MlsEngine_stashed_message(
+            port_,
+            arg0,
+            arg1,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_opt_box_autoadd_stashed_message,
+          decodeErrorData: dco_decode_String,
+        ),
+        constMeta: kCrateApiEngineMlsEngineStashedMessageConstMeta,
+        argValues: [that, stashId],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiEngineMlsEngineStashedMessageConstMeta =>
+      const TaskConstMeta(
+        debugName: "MlsEngine_stashed_message",
+        argNames: ["that", "stashId"],
+      );
+
+  @override
+  Future<List<StashedMessage>> crateApiEngineMlsEngineStashedMessages({
+    required MlsEngine that,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          var arg0 =
+              cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerMlsEngine(
+                that,
+              );
+          return wire.wire__crate__api__engine__MlsEngine_stashed_messages(
+            port_,
+            arg0,
+          );
+        },
+        codec: DcoCodec(
+          decodeSuccessData: dco_decode_list_stashed_message,
+          decodeErrorData: dco_decode_String,
+        ),
+        constMeta: kCrateApiEngineMlsEngineStashedMessagesConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiEngineMlsEngineStashedMessagesConstMeta =>
+      const TaskConstMeta(
+        debugName: "MlsEngine_stashed_messages",
+        argNames: ["that"],
       );
 
   @override
@@ -4939,6 +5109,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  StashedMessage dco_decode_box_autoadd_stashed_message(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_stashed_message(raw);
+  }
+
+  @protected
   int dco_decode_box_autoadd_u_32(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as int;
@@ -5186,6 +5362,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<StashedMessage> dco_decode_list_stashed_message(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_stashed_message).toList();
+  }
+
+  @protected
   MlsCapabilities dco_decode_mls_capabilities(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -5393,6 +5575,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  StashedMessage? dco_decode_opt_box_autoadd_stashed_message(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_stashed_message(raw);
+  }
+
+  @protected
   int? dco_decode_opt_box_autoadd_u_32(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_u_32(raw);
@@ -5519,6 +5707,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       leaf: dco_decode_opt_box_autoadd_mls_leaf_node_info(arr[4]),
       affectedMember: dco_decode_opt_box_autoadd_mls_member_info(arr[5]),
       extensions: dco_decode_list_mls_extension(arr[6]),
+    );
+  }
+
+  @protected
+  StashedMessage dco_decode_stashed_message(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return StashedMessage(
+      stashId: dco_decode_String(arr[0]),
+      groupId: dco_decode_list_prim_u_8_strict(arr[1]),
+      senderCredential: dco_decode_list_prim_u_8_strict(arr[2]),
+      plaintext: dco_decode_list_prim_u_8_strict(arr[3]),
     );
   }
 
@@ -5804,6 +6006,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_staged_proposal_info(deserializer));
+  }
+
+  @protected
+  StashedMessage sse_decode_box_autoadd_stashed_message(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_stashed_message(deserializer));
   }
 
   @protected
@@ -6120,6 +6330,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<StashedMessage> sse_decode_list_stashed_message(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <StashedMessage>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_stashed_message(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   MlsCapabilities sse_decode_mls_capabilities(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_versions = sse_decode_list_prim_u_16_strict(deserializer);
@@ -6398,6 +6622,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  StashedMessage? sse_decode_opt_box_autoadd_stashed_message(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_stashed_message(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
   int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -6593,6 +6830,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       leaf: var_leaf,
       affectedMember: var_affectedMember,
       extensions: var_extensions,
+    );
+  }
+
+  @protected
+  StashedMessage sse_decode_stashed_message(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_stashId = sse_decode_String(deserializer);
+    var var_groupId = sse_decode_list_prim_u_8_strict(deserializer);
+    var var_senderCredential = sse_decode_list_prim_u_8_strict(deserializer);
+    var var_plaintext = sse_decode_list_prim_u_8_strict(deserializer);
+    return StashedMessage(
+      stashId: var_stashId,
+      groupId: var_groupId,
+      senderCredential: var_senderCredential,
+      plaintext: var_plaintext,
     );
   }
 
@@ -7054,6 +7306,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_stashed_message(
+    StashedMessage self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_stashed_message(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_u_32(self, serializer);
@@ -7338,6 +7599,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_stashed_message(
+    List<StashedMessage> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_stashed_message(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_mls_capabilities(
     MlsCapabilities self,
     SseSerializer serializer,
@@ -7589,6 +7862,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_opt_box_autoadd_stashed_message(
+    StashedMessage? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_stashed_message(self, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -7731,6 +8017,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_opt_box_autoadd_mls_leaf_node_info(self.leaf, serializer);
     sse_encode_opt_box_autoadd_mls_member_info(self.affectedMember, serializer);
     sse_encode_list_mls_extension(self.extensions, serializer);
+  }
+
+  @protected
+  void sse_encode_stashed_message(
+    StashedMessage self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.stashId, serializer);
+    sse_encode_list_prim_u_8_strict(self.groupId, serializer);
+    sse_encode_list_prim_u_8_strict(self.senderCredential, serializer);
+    sse_encode_list_prim_u_8_strict(self.plaintext, serializer);
   }
 
   @protected
@@ -8125,6 +8423,14 @@ class MlsEngineImpl extends RustOpaque implements MlsEngine {
         that: this,
         groupIdBytes: groupIdBytes,
         maxPastEpochs: maxPastEpochs,
+      );
+
+  /// Delete the message stashed under `stashId`, once the application has
+  /// stored it. Deleting one that is not stashed does nothing.
+  Future<void> deleteStashedMessage({required String stashId}) =>
+      RustLib.instance.api.crateApiEngineMlsEngineDeleteStashedMessage(
+        that: this,
+        stashId: stashId,
       );
 
   Future<MlsGroupContextInfo> exportGroupContext({
@@ -8586,6 +8892,33 @@ class MlsEngineImpl extends RustOpaque implements MlsEngine {
     messageBytes: messageBytes,
   );
 
+  /// Process a message as `processMessage` does, and keep an application
+  /// message's plaintext under `stashId` until `deleteStashedMessage`.
+  ///
+  /// The plaintext is written in the same transaction as the ratchet that
+  /// deletes the message's key, so a process that ends right after — a
+  /// crash, or an operating system ending a background task — either still
+  /// has the key or has the plaintext. Without the stash a message would be
+  /// lost when the process ends between this and the application storing
+  /// it. Read it back with `stashedMessages`, store it, then delete it.
+  ///
+  /// Another process can also decrypt for the application this way, e.g. a
+  /// notification service while the app is not running.
+  ///
+  /// Fails, changing nothing, when `stashId` is already stashed. Commits and
+  /// proposals are processed as `processMessage` does, with nothing stashed.
+  /// The Web keeps no stash: there this is `processMessage`.
+  Future<ProcessedMessageResult> processMessageStashed({
+    required List<int> groupIdBytes,
+    required List<int> messageBytes,
+    required String stashId,
+  }) => RustLib.instance.api.crateApiEngineMlsEngineProcessMessageStashed(
+    that: this,
+    groupIdBytes: groupIdBytes,
+    messageBytes: messageBytes,
+    stashId: stashId,
+  );
+
   Future<ProcessedMessageInspectResult> processMessageWithInspect({
     required List<int> groupIdBytes,
     required List<int> messageBytes,
@@ -8882,6 +9215,16 @@ class MlsEngineImpl extends RustOpaque implements MlsEngine {
         groupIdBytes: groupIdBytes,
         maxEpochs: maxEpochs,
       );
+
+  /// The message stashed under `stashId`, if any.
+  Future<StashedMessage?> stashedMessage({required String stashId}) => RustLib
+      .instance
+      .api
+      .crateApiEngineMlsEngineStashedMessage(that: this, stashId: stashId);
+
+  /// Every stashed message, oldest first — see `processMessageStashed`.
+  Future<List<StashedMessage>> stashedMessages() =>
+      RustLib.instance.api.crateApiEngineMlsEngineStashedMessages(that: this);
 
   Future<AddMembersResult> swapMembers({
     required List<int> groupIdBytes,

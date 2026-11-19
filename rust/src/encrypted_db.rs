@@ -9,6 +9,7 @@
 //! CREATE TABLE mls_storage (key BLOB PRIMARY KEY, value BLOB NOT NULL, group_id BLOB);
 //! CREATE INDEX idx_group_id ON mls_storage(group_id);
 //! CREATE TABLE db_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+//! CREATE TABLE stashed_messages (id TEXT PRIMARY KEY, group_id BLOB NOT NULL, sender BLOB NOT NULL, plaintext BLOB NOT NULL);
 //! ```
 
 use zeroize::Zeroize;
@@ -26,7 +27,7 @@ use zeroize::Zeroize;
 ///
 /// **Adding a migration:** Use the `/add-db-migration` Claude skill for a guided walkthrough,
 /// or follow the template in `run_migrations()` comments.
-pub(crate) const LATEST_SCHEMA_VERSION: u32 = 1;
+pub(crate) const LATEST_SCHEMA_VERSION: u32 = 2;
 
 /// Key in the native `db_meta` table that stores the schema version.
 #[cfg(not(target_arch = "wasm32"))]
@@ -52,6 +53,22 @@ const GLOBAL_LABELS: &[&[u8]] = &[
 /// Check if a storage key belongs to the global scope (not group-specific).
 pub fn is_global_key(key: &[u8]) -> bool {
     GLOBAL_LABELS.iter().any(|label| key.starts_with(label))
+}
+
+/// An application message's plaintext, written in the same transaction as the
+/// ratchet that let go of its key — see `MlsEngine::process_message_stashed`.
+pub struct StashedRow {
+    pub id: String,
+    pub group_id: Vec<u8>,
+    /// The sender's TLS-serialized credential.
+    pub sender: Vec<u8>,
+    pub plaintext: Vec<u8>,
+}
+
+impl Drop for StashedRow {
+    fn drop(&mut self) {
+        self.plaintext.zeroize();
+    }
 }
 
 /// Updates to persist after a snapshot operation.
@@ -304,9 +321,12 @@ impl EncryptedDb {
         if version < 1 {
             Self::migrate_native_v0_to_v1(&conn)?;
         }
+        if version < 2 {
+            Self::migrate_native_v1_to_v2(&conn)?;
+        }
 
         // Future migrations:
-        // if version < 2 { Self::migrate_native_v1_to_v2(&conn)?; }
+        // if version < 3 { Self::migrate_native_v2_to_v3(&conn)?; }
 
         Ok(())
     }
@@ -332,6 +352,30 @@ impl EncryptedDb {
         .map_err(|e| format!("Migration v0→v1: failed to write version: {e}"))?;
         tx.commit()
             .map_err(|e| format!("Migration v0→v1: commit failed: {e}"))?;
+        Ok(())
+    }
+
+    /// v1 → v2: Create the `stashed_messages` table.
+    fn migrate_native_v1_to_v2(conn: &rusqlite::Connection) -> Result<(), String> {
+        let tx = conn
+            .unchecked_transaction()
+            .map_err(|e| format!("Migration v1→v2: failed to begin transaction: {e}"))?;
+        tx.execute_batch(
+            "CREATE TABLE IF NOT EXISTS stashed_messages (
+                id TEXT PRIMARY KEY,
+                group_id BLOB NOT NULL,
+                sender BLOB NOT NULL,
+                plaintext BLOB NOT NULL
+            );",
+        )
+        .map_err(|e| format!("Migration v1→v2 failed: {e}"))?;
+        tx.execute(
+            &format!("INSERT OR REPLACE INTO db_meta (key, value) VALUES ('{META_SCHEMA_VERSION}', '2')"),
+            [],
+        )
+        .map_err(|e| format!("Migration v1→v2: failed to write version: {e}"))?;
+        tx.commit()
+            .map_err(|e| format!("Migration v1→v2: commit failed: {e}"))?;
         Ok(())
     }
 
@@ -425,6 +469,65 @@ impl EncryptedDb {
         Self::apply_updates(&tx, &updates, group_id)?;
         tx.commit()
             .map_err(|e| format!("Failed to commit transaction: {e}"))?;
+        Ok(())
+    }
+
+    /// Save updates and `stashed` in one transaction, so the plaintext is
+    /// kept exactly when the key that decrypted it is gone.
+    pub async fn save_updates_and_stash(
+        &self,
+        updates: StorageUpdates,
+        group_id: &[u8],
+        stashed: &StashedRow,
+    ) -> Result<(), String> {
+        let conn = self.conn.lock().unwrap();
+        let tx = conn
+            .unchecked_transaction()
+            .map_err(|e| format!("Failed to begin transaction: {e}"))?;
+        Self::apply_updates(&tx, &updates, Some(group_id))?;
+        tx.execute(
+            "INSERT INTO stashed_messages (id, group_id, sender, plaintext) VALUES (?1, ?2, ?3, ?4)",
+            rusqlite::params![stashed.id, stashed.group_id, stashed.sender, stashed.plaintext],
+        )
+        .map_err(|e| format!("Failed to stash message: {e}"))?;
+        tx.commit()
+            .map_err(|e| format!("Failed to commit transaction: {e}"))?;
+        Ok(())
+    }
+
+    /// The stashed messages, `id` alone when given.
+    pub async fn stashed(&self, id: Option<&str>) -> Result<Vec<StashedRow>, String> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn
+            .prepare(
+                "SELECT id, group_id, sender, plaintext FROM stashed_messages
+                 WHERE ?1 IS NULL OR id = ?1 ORDER BY rowid",
+            )
+            .map_err(|e| format!("Failed to prepare stashed: {e}"))?;
+        let rows = stmt
+            .query_map(rusqlite::params![id], |row| {
+                Ok(StashedRow {
+                    id: row.get(0)?,
+                    group_id: row.get(1)?,
+                    sender: row.get(2)?,
+                    plaintext: row.get(3)?,
+                })
+            })
+            .map_err(|e| format!("Failed to query stashed: {e}"))?;
+        let mut result = Vec::new();
+        for row in rows {
+            result.push(row.map_err(|e| format!("Row error: {e}"))?);
+        }
+        Ok(result)
+    }
+
+    pub async fn delete_stashed(&self, id: &str) -> Result<(), String> {
+        let conn = self.conn.lock().unwrap();
+        conn.execute(
+            "DELETE FROM stashed_messages WHERE id = ?1",
+            rusqlite::params![id],
+        )
+        .map_err(|e| format!("Failed to delete stashed message: {e}"))?;
         Ok(())
     }
 
@@ -787,9 +890,13 @@ impl EncryptedDb {
         if version < 1 {
             self.idb_write_schema_version(1).await?;
         }
+        // v1 → v2: the stash is native only, nothing to transform.
+        if version < 2 {
+            self.idb_write_schema_version(2).await?;
+        }
 
         // Future migrations:
-        // if version < 2 { self.migrate_wasm_v1_to_v2().await?; }
+        // if version < 3 { self.migrate_wasm_v2_to_v3().await?; }
 
         Ok(())
     }
@@ -946,6 +1053,26 @@ impl EncryptedDb {
         _group_id: Option<&[u8]>,
     ) -> Result<(), String> {
         self.write_all(updates, Vec::new()).await
+    }
+
+    /// The Web keeps no stash, the updates are saved as `save_updates` does.
+    /// It is for a process that decrypts while the app is not running, e.g. a
+    /// notification service, which the Web does not have.
+    pub async fn save_updates_and_stash(
+        &self,
+        updates: StorageUpdates,
+        _group_id: &[u8],
+        _stashed: &StashedRow,
+    ) -> Result<(), String> {
+        self.write_all(updates, Vec::new()).await
+    }
+
+    pub async fn stashed(&self, _id: Option<&str>) -> Result<Vec<StashedRow>, String> {
+        Ok(Vec::new())
+    }
+
+    pub async fn delete_stashed(&self, _id: &str) -> Result<(), String> {
+        Ok(())
     }
 
     /// Save updates *and* drop every remaining row of the group, in one

@@ -450,6 +450,28 @@ pub struct ProcessedMessageResult {
     pub proposal_type: Option<MlsProposalType>,
 }
 
+/// An application message kept by `processMessageStashed`.
+pub struct StashedMessage {
+    pub stash_id: String,
+    pub group_id: Vec<u8>,
+    /// The sender's TLS-serialized credential, as MLS authenticated it.
+    /// Deserialize with `MlsCredential.deserialize()`.
+    pub sender_credential: Vec<u8>,
+    pub plaintext: Vec<u8>,
+}
+
+impl From<crate::encrypted_db::StashedRow> for StashedMessage {
+    fn from(mut row: crate::encrypted_db::StashedRow) -> Self {
+        // the row wipes its plaintext when dropped, this copy is the caller's
+        StashedMessage {
+            stash_id: std::mem::take(&mut row.id),
+            group_id: std::mem::take(&mut row.group_id),
+            sender_credential: std::mem::take(&mut row.sender),
+            plaintext: std::mem::take(&mut row.plaintext),
+        }
+    }
+}
+
 pub struct ProcessedMessageInspectResult {
     pub message_type: ProcessedMessageType,
     /// The sender's leaf index when a member sent it; `None` for an external
@@ -847,6 +869,18 @@ impl MlsEngine {
             return Ok(());
         }
         self.db()?.save_updates(updates, group_id).await
+    }
+
+    /// `commit`, writing `stashed` in the same transaction.
+    async fn commit_and_stash(
+        &self,
+        session: OpSession<'_>,
+        group_id: &[u8],
+        stashed: &crate::encrypted_db::StashedRow,
+    ) -> Result<(), String> {
+        let OpSession { locks: _locks, provider } = session;
+        let updates = provider.into_storage().into_updates();
+        self.db()?.save_updates_and_stash(updates, group_id, stashed).await
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -2634,6 +2668,61 @@ impl MlsEngine {
         group_id_bytes: Vec<u8>,
         message_bytes: Vec<u8>,
     ) -> Result<ProcessedMessageResult, String> {
+        self.process_message_into(group_id_bytes, message_bytes, None).await
+    }
+
+    /// Process a message as `processMessage` does, and keep an application
+    /// message's plaintext under `stashId` until `deleteStashedMessage`.
+    ///
+    /// The plaintext is written in the same transaction as the ratchet that
+    /// deletes the message's key, so a process that ends right after — a
+    /// crash, or an operating system ending a background task — either still
+    /// has the key or has the plaintext. Without the stash a message would be
+    /// lost when the process ends between this and the application storing
+    /// it. Read it back with `stashedMessages`, store it, then delete it.
+    ///
+    /// Another process can also decrypt for the application this way, e.g. a
+    /// notification service while the app is not running.
+    ///
+    /// Fails, changing nothing, when `stashId` is already stashed. Commits and
+    /// proposals are processed as `processMessage` does, with nothing stashed.
+    /// The Web keeps no stash: there this is `processMessage`.
+    pub async fn process_message_stashed(
+        &self,
+        group_id_bytes: Vec<u8>,
+        message_bytes: Vec<u8>,
+        stash_id: String,
+    ) -> Result<ProcessedMessageResult, String> {
+        self.process_message_into(group_id_bytes, message_bytes, Some(stash_id)).await
+    }
+
+    /// Every stashed message, oldest first — see `processMessageStashed`.
+    pub async fn stashed_messages(&self) -> Result<Vec<StashedMessage>, String> {
+        let _locks = self.acquire_locks().await?;
+        let rows = self.db()?.stashed(None).await?;
+        Ok(rows.into_iter().map(StashedMessage::from).collect())
+    }
+
+    /// The message stashed under `stashId`, if any.
+    pub async fn stashed_message(&self, stash_id: String) -> Result<Option<StashedMessage>, String> {
+        let _locks = self.acquire_locks().await?;
+        let rows = self.db()?.stashed(Some(&stash_id)).await?;
+        Ok(rows.into_iter().next().map(StashedMessage::from))
+    }
+
+    /// Delete the message stashed under `stashId`, once the application has
+    /// stored it. Deleting one that is not stashed does nothing.
+    pub async fn delete_stashed_message(&self, stash_id: String) -> Result<(), String> {
+        let _locks = self.acquire_locks().await?;
+        self.db()?.delete_stashed(&stash_id).await
+    }
+
+    async fn process_message_into(
+        &self,
+        group_id_bytes: Vec<u8>,
+        message_bytes: Vec<u8>,
+        stash_id: Option<String>,
+    ) -> Result<ProcessedMessageResult, String> {
         let provider = self.load_for_group(&group_id_bytes).await?;
         let mut group = load_group(&group_id_bytes, &provider)?;
 
@@ -2651,6 +2740,10 @@ impl MlsEngine {
             Sender::Member(idx) => Some(idx.u32()),
             _ => None,
         };
+        let sender_credential = processed
+            .credential()
+            .tls_serialize_detached()
+            .map_err(|e| format!("Failed to serialize sender credential: {}", e))?;
         let epoch = group.epoch().as_u64();
 
         let (message_type, application_message, has_staged_commit, has_proposal, proposal_type) =
@@ -2700,7 +2793,18 @@ impl MlsEngine {
                 _ => return Err("Unknown processed message content type".to_string()),
             };
 
-        self.commit(provider, Some(&group_id_bytes)).await?;
+        match (stash_id, &application_message) {
+            (Some(id), Some(plaintext)) => {
+                let stashed = crate::encrypted_db::StashedRow {
+                    id,
+                    group_id: group_id_bytes.clone(),
+                    sender: sender_credential,
+                    plaintext: plaintext.clone(),
+                };
+                self.commit_and_stash(provider, &group_id_bytes, &stashed).await?;
+            }
+            _ => self.commit(provider, Some(&group_id_bytes)).await?,
+        }
 
         Ok(ProcessedMessageResult {
             message_type, sender_index, epoch, application_message, has_staged_commit, has_proposal, proposal_type,

@@ -136,6 +136,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   StagedProposalInfo dco_decode_box_autoadd_staged_proposal_info(dynamic raw);
 
   @protected
+  StashedMessage dco_decode_box_autoadd_stashed_message(dynamic raw);
+
+  @protected
   int dco_decode_box_autoadd_u_32(dynamic raw);
 
   @protected
@@ -221,6 +224,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<StagedProposalInfo> dco_decode_list_staged_proposal_info(dynamic raw);
 
   @protected
+  List<StashedMessage> dco_decode_list_stashed_message(dynamic raw);
+
+  @protected
   MlsCapabilities dco_decode_mls_capabilities(dynamic raw);
 
   @protected
@@ -289,6 +295,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  StashedMessage? dco_decode_opt_box_autoadd_stashed_message(dynamic raw);
+
+  @protected
   int? dco_decode_opt_box_autoadd_u_32(dynamic raw);
 
   @protected
@@ -324,6 +333,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   StagedProposalInfo dco_decode_staged_proposal_info(dynamic raw);
+
+  @protected
+  StashedMessage dco_decode_stashed_message(dynamic raw);
 
   @protected
   int dco_decode_u_16(dynamic raw);
@@ -468,6 +480,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  StashedMessage sse_decode_box_autoadd_stashed_message(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   int sse_decode_box_autoadd_u_32(SseDeserializer deserializer);
 
   @protected
@@ -577,6 +594,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<StashedMessage> sse_decode_list_stashed_message(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   MlsCapabilities sse_decode_mls_capabilities(SseDeserializer deserializer);
 
   @protected
@@ -665,6 +687,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  StashedMessage? sse_decode_opt_box_autoadd_stashed_message(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer);
 
   @protected
@@ -708,6 +735,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   StagedProposalInfo sse_decode_staged_proposal_info(
     SseDeserializer deserializer,
   );
+
+  @protected
+  StashedMessage sse_decode_stashed_message(SseDeserializer deserializer);
 
   @protected
   int sse_decode_u_16(SseDeserializer deserializer);
@@ -819,6 +849,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   JSAny cst_encode_box_autoadd_staged_proposal_info(StagedProposalInfo raw) {
     // Codec=Cst (C-struct based), see doc to use other codecs
     return cst_encode_staged_proposal_info(raw);
+  }
+
+  @protected
+  JSAny cst_encode_box_autoadd_stashed_message(StashedMessage raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return cst_encode_stashed_message(raw);
   }
 
   @protected
@@ -1019,6 +1055,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   }
 
   @protected
+  JSAny cst_encode_list_stashed_message(List<StashedMessage> raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return raw.map(cst_encode_stashed_message).toList().jsify()!;
+  }
+
+  @protected
   JSAny cst_encode_mls_capabilities(MlsCapabilities raw) {
     // Codec=Cst (C-struct based), see doc to use other codecs
     return [
@@ -1175,6 +1217,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   }
 
   @protected
+  JSAny? cst_encode_opt_box_autoadd_stashed_message(StashedMessage? raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return raw == null ? null : cst_encode_box_autoadd_stashed_message(raw);
+  }
+
+  @protected
   int? cst_encode_opt_box_autoadd_u_32(int? raw) {
     // Codec=Cst (C-struct based), see doc to use other codecs
     return raw == null ? null : cst_encode_box_autoadd_u_32(raw);
@@ -1277,6 +1325,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       cst_encode_opt_box_autoadd_mls_leaf_node_info(raw.leaf),
       cst_encode_opt_box_autoadd_mls_member_info(raw.affectedMember),
       cst_encode_list_mls_extension(raw.extensions),
+    ].jsify()!;
+  }
+
+  @protected
+  JSAny cst_encode_stashed_message(StashedMessage raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return [
+      cst_encode_String(raw.stashId),
+      cst_encode_list_prim_u_8_strict(raw.groupId),
+      cst_encode_list_prim_u_8_strict(raw.senderCredential),
+      cst_encode_list_prim_u_8_strict(raw.plaintext),
     ].jsify()!;
   }
 
@@ -1540,6 +1599,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_stashed_message(
+    StashedMessage self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer);
 
   @protected
@@ -1687,6 +1752,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_stashed_message(
+    List<StashedMessage> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_mls_capabilities(
     MlsCapabilities self,
     SseSerializer serializer,
@@ -1801,6 +1872,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_stashed_message(
+    StashedMessage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer);
 
   @protected
@@ -1857,6 +1934,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_staged_proposal_info(
     StagedProposalInfo self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_stashed_message(
+    StashedMessage self,
     SseSerializer serializer,
   );
 
@@ -2188,6 +2271,16 @@ class RustLibWire implements BaseWire {
         group_id_bytes,
         max_past_epochs,
       );
+
+  void wire__crate__api__engine__MlsEngine_delete_stashed_message(
+    NativePortType port_,
+    int that,
+    String stash_id,
+  ) => wasmModule.wire__crate__api__engine__MlsEngine_delete_stashed_message(
+    port_,
+    that,
+    stash_id,
+  );
 
   void wire__crate__api__engine__MlsEngine_export_group_context(
     NativePortType port_,
@@ -2626,6 +2719,20 @@ class RustLibWire implements BaseWire {
     message_bytes,
   );
 
+  void wire__crate__api__engine__MlsEngine_process_message_stashed(
+    NativePortType port_,
+    int that,
+    JSAny group_id_bytes,
+    JSAny message_bytes,
+    String stash_id,
+  ) => wasmModule.wire__crate__api__engine__MlsEngine_process_message_stashed(
+    port_,
+    that,
+    group_id_bytes,
+    message_bytes,
+    stash_id,
+  );
+
   void wire__crate__api__engine__MlsEngine_process_message_with_inspect(
     NativePortType port_,
     int that,
@@ -2870,6 +2977,24 @@ class RustLibWire implements BaseWire {
         group_id_bytes,
         max_epochs,
       );
+
+  void wire__crate__api__engine__MlsEngine_stashed_message(
+    NativePortType port_,
+    int that,
+    String stash_id,
+  ) => wasmModule.wire__crate__api__engine__MlsEngine_stashed_message(
+    port_,
+    that,
+    stash_id,
+  );
+
+  void wire__crate__api__engine__MlsEngine_stashed_messages(
+    NativePortType port_,
+    int that,
+  ) => wasmModule.wire__crate__api__engine__MlsEngine_stashed_messages(
+    port_,
+    that,
+  );
 
   void wire__crate__api__engine__MlsEngine_swap_members(
     NativePortType port_,
@@ -3253,6 +3378,12 @@ extension type RustLibWasmModule._(JSObject _) implements JSObject {
     int? max_past_epochs,
   );
 
+  external void wire__crate__api__engine__MlsEngine_delete_stashed_message(
+    NativePortType port_,
+    int that,
+    String stash_id,
+  );
+
   external void wire__crate__api__engine__MlsEngine_export_group_context(
     NativePortType port_,
     int that,
@@ -3508,6 +3639,14 @@ extension type RustLibWasmModule._(JSObject _) implements JSObject {
     JSAny message_bytes,
   );
 
+  external void wire__crate__api__engine__MlsEngine_process_message_stashed(
+    NativePortType port_,
+    int that,
+    JSAny group_id_bytes,
+    JSAny message_bytes,
+    String stash_id,
+  );
+
   external void
   wire__crate__api__engine__MlsEngine_process_message_with_inspect(
     NativePortType port_,
@@ -3647,6 +3786,17 @@ extension type RustLibWasmModule._(JSObject _) implements JSObject {
     int that,
     JSAny group_id_bytes,
     int max_epochs,
+  );
+
+  external void wire__crate__api__engine__MlsEngine_stashed_message(
+    NativePortType port_,
+    int that,
+    String stash_id,
+  );
+
+  external void wire__crate__api__engine__MlsEngine_stashed_messages(
+    NativePortType port_,
+    int that,
   );
 
   external void wire__crate__api__engine__MlsEngine_swap_members(

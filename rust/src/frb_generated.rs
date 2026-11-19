@@ -42,7 +42,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueNom,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1609538643;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -128438248;
 
 // Section: executor
 
@@ -1217,6 +1217,55 @@ let decode_indices_ = flutter_rust_bridge::for_generated::lockable_compute_decod
  let output_ok = crate::api::engine::MlsEngine::delete_past_epoch_secrets_without_timestamps(&*api_that_guard, api_group_id_bytes, api_max_past_epochs).await?;   std::result::Result::Ok(output_ok)
                     })().await)
                 } })
+}
+fn wire__crate__api__engine__MlsEngine_delete_stashed_message_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    that: impl CstDecode<
+        RustOpaqueNom<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<MlsEngine>>,
+    >,
+    stash_id: impl CstDecode<String>,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::DcoCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "MlsEngine_delete_stashed_message",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let api_that = that.cst_decode();
+            let api_stash_id = stash_id.cst_decode();
+            move |context| async move {
+                transform_result_dco::<_, _, String>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::engine::MlsEngine::delete_stashed_message(
+                            &*api_that_guard,
+                            api_stash_id,
+                        )
+                        .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
 }
 fn wire__crate__api__engine__MlsEngine_export_group_context_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
@@ -3088,6 +3137,61 @@ fn wire__crate__api__engine__MlsEngine_process_message_impl(
         },
     )
 }
+fn wire__crate__api__engine__MlsEngine_process_message_stashed_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    that: impl CstDecode<
+        RustOpaqueNom<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<MlsEngine>>,
+    >,
+    group_id_bytes: impl CstDecode<Vec<u8>>,
+    message_bytes: impl CstDecode<Vec<u8>>,
+    stash_id: impl CstDecode<String>,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::DcoCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "MlsEngine_process_message_stashed",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let api_that = that.cst_decode();
+            let api_group_id_bytes = group_id_bytes.cst_decode();
+            let api_message_bytes = message_bytes.cst_decode();
+            let api_stash_id = stash_id.cst_decode();
+            move |context| async move {
+                transform_result_dco::<_, _, String>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::engine::MlsEngine::process_message_stashed(
+                            &*api_that_guard,
+                            api_group_id_bytes,
+                            api_message_bytes,
+                            api_stash_id,
+                        )
+                        .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__engine__MlsEngine_process_message_with_inspect_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     that: impl CstDecode<
@@ -3991,6 +4095,100 @@ let decode_indices_ = flutter_rust_bridge::for_generated::lockable_compute_decod
  let output_ok = crate::api::engine::MlsEngine::set_past_epoch_deletion_policy_max_epochs(&*api_that_guard, api_group_id_bytes, api_max_epochs).await?;   std::result::Result::Ok(output_ok)
                     })().await)
                 } })
+}
+fn wire__crate__api__engine__MlsEngine_stashed_message_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    that: impl CstDecode<
+        RustOpaqueNom<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<MlsEngine>>,
+    >,
+    stash_id: impl CstDecode<String>,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::DcoCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "MlsEngine_stashed_message",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let api_that = that.cst_decode();
+            let api_stash_id = stash_id.cst_decode();
+            move |context| async move {
+                transform_result_dco::<_, _, String>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::engine::MlsEngine::stashed_message(
+                            &*api_that_guard,
+                            api_stash_id,
+                        )
+                        .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__engine__MlsEngine_stashed_messages_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    that: impl CstDecode<
+        RustOpaqueNom<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<MlsEngine>>,
+    >,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::DcoCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "MlsEngine_stashed_messages",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let api_that = that.cst_decode();
+            move |context| async move {
+                transform_result_dco::<_, _, String>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok =
+                            crate::api::engine::MlsEngine::stashed_messages(&*api_that_guard)
+                                .await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
 }
 fn wire__crate__api__engine__MlsEngine_swap_members_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
@@ -5093,6 +5291,20 @@ impl SseDecode for Vec<crate::api::types::StagedProposalInfo> {
     }
 }
 
+impl SseDecode for Vec<crate::api::engine::StashedMessage> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::engine::StashedMessage>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for crate::api::types::MlsCapabilities {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -5414,6 +5626,19 @@ impl SseDecode for Option<crate::api::types::StagedProposalInfo> {
     }
 }
 
+impl SseDecode for Option<crate::api::engine::StashedMessage> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::api::engine::StashedMessage>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
 impl SseDecode for Option<u32> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -5599,6 +5824,22 @@ impl SseDecode for crate::api::types::StagedProposalInfo {
             leaf: var_leaf,
             affected_member: var_affectedMember,
             extensions: var_extensions,
+        };
+    }
+}
+
+impl SseDecode for crate::api::engine::StashedMessage {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_stashId = <String>::sse_decode(deserializer);
+        let mut var_groupId = <Vec<u8>>::sse_decode(deserializer);
+        let mut var_senderCredential = <Vec<u8>>::sse_decode(deserializer);
+        let mut var_plaintext = <Vec<u8>>::sse_decode(deserializer);
+        return crate::api::engine::StashedMessage {
+            stash_id: var_stashId,
+            group_id: var_groupId,
+            sender_credential: var_senderCredential,
+            plaintext: var_plaintext,
         };
     }
 }
@@ -6506,6 +6747,29 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::types::StagedProposalInfo>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::engine::StashedMessage {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.stash_id.into_into_dart().into_dart(),
+            self.group_id.into_into_dart().into_dart(),
+            self.sender_credential.into_into_dart().into_dart(),
+            self.plaintext.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::engine::StashedMessage
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::engine::StashedMessage>
+    for crate::api::engine::StashedMessage
+{
+    fn into_into_dart(self) -> crate::api::engine::StashedMessage {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::types::WelcomeGroupInfoExtensions {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -6853,6 +7117,16 @@ impl SseEncode for Vec<crate::api::types::StagedProposalInfo> {
     }
 }
 
+impl SseEncode for Vec<crate::api::engine::StashedMessage> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::engine::StashedMessage>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for crate::api::types::MlsCapabilities {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -7108,6 +7382,16 @@ impl SseEncode for Option<crate::api::types::StagedProposalInfo> {
     }
 }
 
+impl SseEncode for Option<crate::api::engine::StashedMessage> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::api::engine::StashedMessage>::sse_encode(value, serializer);
+        }
+    }
+}
+
 impl SseEncode for Option<u32> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -7243,6 +7527,16 @@ impl SseEncode for crate::api::types::StagedProposalInfo {
         <Option<crate::api::types::MlsLeafNodeInfo>>::sse_encode(self.leaf, serializer);
         <Option<crate::api::types::MlsMemberInfo>>::sse_encode(self.affected_member, serializer);
         <Vec<crate::api::types::MlsExtension>>::sse_encode(self.extensions, serializer);
+    }
+}
+
+impl SseEncode for crate::api::engine::StashedMessage {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.stash_id, serializer);
+        <Vec<u8>>::sse_encode(self.group_id, serializer);
+        <Vec<u8>>::sse_encode(self.sender_credential, serializer);
+        <Vec<u8>>::sse_encode(self.plaintext, serializer);
     }
 }
 
@@ -7496,6 +7790,13 @@ mod io {
         fn cst_decode(self) -> crate::api::types::StagedProposalInfo {
             let wrap = unsafe { flutter_rust_bridge::for_generated::box_from_leak_ptr(self) };
             CstDecode::<crate::api::types::StagedProposalInfo>::cst_decode(*wrap).into()
+        }
+    }
+    impl CstDecode<crate::api::engine::StashedMessage> for *mut wire_cst_stashed_message {
+        // Codec=Cst (C-struct based), see doc to use other codecs
+        fn cst_decode(self) -> crate::api::engine::StashedMessage {
+            let wrap = unsafe { flutter_rust_bridge::for_generated::box_from_leak_ptr(self) };
+            CstDecode::<crate::api::engine::StashedMessage>::cst_decode(*wrap).into()
         }
     }
     impl CstDecode<u32> for *mut u32 {
@@ -7754,6 +8055,16 @@ mod io {
             vec.into_iter().map(CstDecode::cst_decode).collect()
         }
     }
+    impl CstDecode<Vec<crate::api::engine::StashedMessage>> for *mut wire_cst_list_stashed_message {
+        // Codec=Cst (C-struct based), see doc to use other codecs
+        fn cst_decode(self) -> Vec<crate::api::engine::StashedMessage> {
+            let vec = unsafe {
+                let wrap = flutter_rust_bridge::for_generated::box_from_leak_ptr(self);
+                flutter_rust_bridge::for_generated::vec_from_leak_ptr(wrap.ptr, wrap.len)
+            };
+            vec.into_iter().map(CstDecode::cst_decode).collect()
+        }
+    }
     impl CstDecode<crate::api::types::MlsCapabilities> for wire_cst_mls_capabilities {
         // Codec=Cst (C-struct based), see doc to use other codecs
         fn cst_decode(self) -> crate::api::types::MlsCapabilities {
@@ -7933,6 +8244,17 @@ mod io {
                 leaf: self.leaf.cst_decode(),
                 affected_member: self.affected_member.cst_decode(),
                 extensions: self.extensions.cst_decode(),
+            }
+        }
+    }
+    impl CstDecode<crate::api::engine::StashedMessage> for wire_cst_stashed_message {
+        // Codec=Cst (C-struct based), see doc to use other codecs
+        fn cst_decode(self) -> crate::api::engine::StashedMessage {
+            crate::api::engine::StashedMessage {
+                stash_id: self.stash_id.cst_decode(),
+                group_id: self.group_id.cst_decode(),
+                sender_credential: self.sender_credential.cst_decode(),
+                plaintext: self.plaintext.cst_decode(),
             }
         }
     }
@@ -8375,6 +8697,21 @@ mod io {
             Self::new_with_null_ptr()
         }
     }
+    impl NewWithNullPtr for wire_cst_stashed_message {
+        fn new_with_null_ptr() -> Self {
+            Self {
+                stash_id: core::ptr::null_mut(),
+                group_id: core::ptr::null_mut(),
+                sender_credential: core::ptr::null_mut(),
+                plaintext: core::ptr::null_mut(),
+            }
+        }
+    }
+    impl Default for wire_cst_stashed_message {
+        fn default() -> Self {
+            Self::new_with_null_ptr()
+        }
+    }
     impl NewWithNullPtr for wire_cst_welcome_group_info_extensions {
         fn new_with_null_ptr() -> Self {
             Self {
@@ -8747,6 +9084,15 @@ mod io {
             group_id_bytes,
             max_past_epochs,
         )
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_openmls_wire__crate__api__engine__MlsEngine_delete_stashed_message(
+        port_: i64,
+        that: usize,
+        stash_id: *mut wire_cst_list_prim_u_8_strict,
+    ) {
+        wire__crate__api__engine__MlsEngine_delete_stashed_message_impl(port_, that, stash_id)
     }
 
     #[unsafe(no_mangle)]
@@ -9228,6 +9574,23 @@ mod io {
     }
 
     #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_openmls_wire__crate__api__engine__MlsEngine_process_message_stashed(
+        port_: i64,
+        that: usize,
+        group_id_bytes: *mut wire_cst_list_prim_u_8_loose,
+        message_bytes: *mut wire_cst_list_prim_u_8_loose,
+        stash_id: *mut wire_cst_list_prim_u_8_strict,
+    ) {
+        wire__crate__api__engine__MlsEngine_process_message_stashed_impl(
+            port_,
+            that,
+            group_id_bytes,
+            message_bytes,
+            stash_id,
+        )
+    }
+
+    #[unsafe(no_mangle)]
     pub extern "C" fn frbgen_openmls_wire__crate__api__engine__MlsEngine_process_message_with_inspect(
         port_: i64,
         that: usize,
@@ -9512,6 +9875,23 @@ mod io {
             group_id_bytes,
             max_epochs,
         )
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_openmls_wire__crate__api__engine__MlsEngine_stashed_message(
+        port_: i64,
+        that: usize,
+        stash_id: *mut wire_cst_list_prim_u_8_strict,
+    ) {
+        wire__crate__api__engine__MlsEngine_stashed_message_impl(port_, that, stash_id)
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_openmls_wire__crate__api__engine__MlsEngine_stashed_messages(
+        port_: i64,
+        that: usize,
+    ) {
+        wire__crate__api__engine__MlsEngine_stashed_messages_impl(port_, that)
     }
 
     #[unsafe(no_mangle)]
@@ -9838,6 +10218,14 @@ mod io {
     }
 
     #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_openmls_cst_new_box_autoadd_stashed_message(
+    ) -> *mut wire_cst_stashed_message {
+        flutter_rust_bridge::for_generated::new_leak_box_ptr(
+            wire_cst_stashed_message::new_with_null_ptr(),
+        )
+    }
+
+    #[unsafe(no_mangle)]
     pub extern "C" fn frbgen_openmls_cst_new_box_autoadd_u_32(value: u32) -> *mut u32 {
         flutter_rust_bridge::for_generated::new_leak_box_ptr(value)
     }
@@ -9990,6 +10378,20 @@ mod io {
         let wrap = wire_cst_list_staged_proposal_info {
             ptr: flutter_rust_bridge::for_generated::new_leak_vec_ptr(
                 <wire_cst_staged_proposal_info>::new_with_null_ptr(),
+                len,
+            ),
+            len,
+        };
+        flutter_rust_bridge::for_generated::new_leak_box_ptr(wrap)
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_openmls_cst_new_list_stashed_message(
+        len: i32,
+    ) -> *mut wire_cst_list_stashed_message {
+        let wrap = wire_cst_list_stashed_message {
+            ptr: flutter_rust_bridge::for_generated::new_leak_vec_ptr(
+                <wire_cst_stashed_message>::new_with_null_ptr(),
                 len,
             ),
             len,
@@ -10161,6 +10563,12 @@ mod io {
     }
     #[repr(C)]
     #[derive(Clone, Copy)]
+    pub struct wire_cst_list_stashed_message {
+        ptr: *mut wire_cst_stashed_message,
+        len: i32,
+    }
+    #[repr(C)]
+    #[derive(Clone, Copy)]
     pub struct wire_cst_mls_capabilities {
         versions: *mut wire_cst_list_prim_u_16_strict,
         ciphersuites: *mut wire_cst_list_prim_u_16_strict,
@@ -10289,6 +10697,14 @@ mod io {
         leaf: *mut wire_cst_mls_leaf_node_info,
         affected_member: *mut wire_cst_mls_member_info,
         extensions: *mut wire_cst_list_mls_extension,
+    }
+    #[repr(C)]
+    #[derive(Clone, Copy)]
+    pub struct wire_cst_stashed_message {
+        stash_id: *mut wire_cst_list_prim_u_8_strict,
+        group_id: *mut wire_cst_list_prim_u_8_strict,
+        sender_credential: *mut wire_cst_list_prim_u_8_strict,
+        plaintext: *mut wire_cst_list_prim_u_8_strict,
     }
     #[repr(C)]
     #[derive(Clone, Copy)]
@@ -10712,6 +11128,18 @@ mod web {
                 .collect()
         }
     }
+    impl CstDecode<Vec<crate::api::engine::StashedMessage>>
+        for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue
+    {
+        // Codec=Cst (C-struct based), see doc to use other codecs
+        fn cst_decode(self) -> Vec<crate::api::engine::StashedMessage> {
+            self.dyn_into::<flutter_rust_bridge::for_generated::js_sys::Array>()
+                .unwrap()
+                .iter()
+                .map(CstDecode::cst_decode)
+                .collect()
+        }
+    }
     impl CstDecode<crate::api::types::MlsCapabilities>
         for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue
     {
@@ -11062,6 +11490,28 @@ mod web {
                 leaf: self_.get(4).cst_decode(),
                 affected_member: self_.get(5).cst_decode(),
                 extensions: self_.get(6).cst_decode(),
+            }
+        }
+    }
+    impl CstDecode<crate::api::engine::StashedMessage>
+        for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue
+    {
+        // Codec=Cst (C-struct based), see doc to use other codecs
+        fn cst_decode(self) -> crate::api::engine::StashedMessage {
+            let self_ = self
+                .dyn_into::<flutter_rust_bridge::for_generated::js_sys::Array>()
+                .unwrap();
+            assert_eq!(
+                self_.length(),
+                4,
+                "Expected 4 elements, got {}",
+                self_.length()
+            );
+            crate::api::engine::StashedMessage {
+                stash_id: self_.get(0).cst_decode(),
+                group_id: self_.get(1).cst_decode(),
+                sender_credential: self_.get(2).cst_decode(),
+                plaintext: self_.get(3).cst_decode(),
             }
         }
     }
@@ -11653,6 +12103,15 @@ mod web {
     }
 
     #[wasm_bindgen]
+    pub fn wire__crate__api__engine__MlsEngine_delete_stashed_message(
+        port_: flutter_rust_bridge::for_generated::MessagePort,
+        that: flutter_rust_bridge::for_generated::wasm_bindgen::JsValue,
+        stash_id: String,
+    ) {
+        wire__crate__api__engine__MlsEngine_delete_stashed_message_impl(port_, that, stash_id)
+    }
+
+    #[wasm_bindgen]
     pub fn wire__crate__api__engine__MlsEngine_export_group_context(
         port_: flutter_rust_bridge::for_generated::MessagePort,
         that: flutter_rust_bridge::for_generated::wasm_bindgen::JsValue,
@@ -12131,6 +12590,23 @@ mod web {
     }
 
     #[wasm_bindgen]
+    pub fn wire__crate__api__engine__MlsEngine_process_message_stashed(
+        port_: flutter_rust_bridge::for_generated::MessagePort,
+        that: flutter_rust_bridge::for_generated::wasm_bindgen::JsValue,
+        group_id_bytes: Box<[u8]>,
+        message_bytes: Box<[u8]>,
+        stash_id: String,
+    ) {
+        wire__crate__api__engine__MlsEngine_process_message_stashed_impl(
+            port_,
+            that,
+            group_id_bytes,
+            message_bytes,
+            stash_id,
+        )
+    }
+
+    #[wasm_bindgen]
     pub fn wire__crate__api__engine__MlsEngine_process_message_with_inspect(
         port_: flutter_rust_bridge::for_generated::MessagePort,
         that: flutter_rust_bridge::for_generated::wasm_bindgen::JsValue,
@@ -12415,6 +12891,23 @@ mod web {
             group_id_bytes,
             max_epochs,
         )
+    }
+
+    #[wasm_bindgen]
+    pub fn wire__crate__api__engine__MlsEngine_stashed_message(
+        port_: flutter_rust_bridge::for_generated::MessagePort,
+        that: flutter_rust_bridge::for_generated::wasm_bindgen::JsValue,
+        stash_id: String,
+    ) {
+        wire__crate__api__engine__MlsEngine_stashed_message_impl(port_, that, stash_id)
+    }
+
+    #[wasm_bindgen]
+    pub fn wire__crate__api__engine__MlsEngine_stashed_messages(
+        port_: flutter_rust_bridge::for_generated::MessagePort,
+        that: flutter_rust_bridge::for_generated::wasm_bindgen::JsValue,
+    ) {
+        wire__crate__api__engine__MlsEngine_stashed_messages_impl(port_, that)
     }
 
     #[wasm_bindgen]

@@ -26,7 +26,7 @@ void main() {
 
     test('schema_version returns expected value', () async {
       final engine = await createTestEngine();
-      expect(engine.schemaVersion(), 1);
+      expect(engine.schemaVersion(), 2);
     });
   });
 

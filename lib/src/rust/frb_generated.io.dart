@@ -134,6 +134,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   StagedProposalInfo dco_decode_box_autoadd_staged_proposal_info(dynamic raw);
 
   @protected
+  StashedMessage dco_decode_box_autoadd_stashed_message(dynamic raw);
+
+  @protected
   int dco_decode_box_autoadd_u_32(dynamic raw);
 
   @protected
@@ -219,6 +222,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<StagedProposalInfo> dco_decode_list_staged_proposal_info(dynamic raw);
 
   @protected
+  List<StashedMessage> dco_decode_list_stashed_message(dynamic raw);
+
+  @protected
   MlsCapabilities dco_decode_mls_capabilities(dynamic raw);
 
   @protected
@@ -287,6 +293,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  StashedMessage? dco_decode_opt_box_autoadd_stashed_message(dynamic raw);
+
+  @protected
   int? dco_decode_opt_box_autoadd_u_32(dynamic raw);
 
   @protected
@@ -322,6 +331,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   StagedProposalInfo dco_decode_staged_proposal_info(dynamic raw);
+
+  @protected
+  StashedMessage dco_decode_stashed_message(dynamic raw);
 
   @protected
   int dco_decode_u_16(dynamic raw);
@@ -466,6 +478,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  StashedMessage sse_decode_box_autoadd_stashed_message(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   int sse_decode_box_autoadd_u_32(SseDeserializer deserializer);
 
   @protected
@@ -575,6 +592,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<StashedMessage> sse_decode_list_stashed_message(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   MlsCapabilities sse_decode_mls_capabilities(SseDeserializer deserializer);
 
   @protected
@@ -663,6 +685,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  StashedMessage? sse_decode_opt_box_autoadd_stashed_message(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer);
 
   @protected
@@ -706,6 +733,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   StagedProposalInfo sse_decode_staged_proposal_info(
     SseDeserializer deserializer,
   );
+
+  @protected
+  StashedMessage sse_decode_stashed_message(SseDeserializer deserializer);
 
   @protected
   int sse_decode_u_16(SseDeserializer deserializer);
@@ -837,6 +867,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     // Codec=Cst (C-struct based), see doc to use other codecs
     final ptr = wire.cst_new_box_autoadd_staged_proposal_info();
     cst_api_fill_to_wire_staged_proposal_info(raw, ptr.ref);
+    return ptr;
+  }
+
+  @protected
+  ffi.Pointer<wire_cst_stashed_message> cst_encode_box_autoadd_stashed_message(
+    StashedMessage raw,
+  ) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    final ptr = wire.cst_new_box_autoadd_stashed_message();
+    cst_api_fill_to_wire_stashed_message(raw, ptr.ref);
     return ptr;
   }
 
@@ -983,6 +1023,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   }
 
   @protected
+  ffi.Pointer<wire_cst_list_stashed_message> cst_encode_list_stashed_message(
+    List<StashedMessage> raw,
+  ) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    final ans = wire.cst_new_list_stashed_message(raw.length);
+    for (var i = 0; i < raw.length; ++i) {
+      cst_api_fill_to_wire_stashed_message(raw[i], ans.ref.ptr[i]);
+    }
+    return ans;
+  }
+
+  @protected
   ffi.Pointer<wire_cst_list_prim_u_8_strict> cst_encode_opt_String(
     String? raw,
   ) {
@@ -1058,6 +1110,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     return raw == null
         ? ffi.nullptr
         : cst_encode_box_autoadd_staged_proposal_info(raw);
+  }
+
+  @protected
+  ffi.Pointer<wire_cst_stashed_message>
+  cst_encode_opt_box_autoadd_stashed_message(StashedMessage? raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return raw == null
+        ? ffi.nullptr
+        : cst_encode_box_autoadd_stashed_message(raw);
   }
 
   @protected
@@ -1179,6 +1240,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     ffi.Pointer<wire_cst_staged_proposal_info> wireObj,
   ) {
     cst_api_fill_to_wire_staged_proposal_info(apiObj, wireObj.ref);
+  }
+
+  @protected
+  void cst_api_fill_to_wire_box_autoadd_stashed_message(
+    StashedMessage apiObj,
+    ffi.Pointer<wire_cst_stashed_message> wireObj,
+  ) {
+    cst_api_fill_to_wire_stashed_message(apiObj, wireObj.ref);
   }
 
   @protected
@@ -1562,6 +1631,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   }
 
   @protected
+  void cst_api_fill_to_wire_stashed_message(
+    StashedMessage apiObj,
+    wire_cst_stashed_message wireObj,
+  ) {
+    wireObj.stash_id = cst_encode_String(apiObj.stashId);
+    wireObj.group_id = cst_encode_list_prim_u_8_strict(apiObj.groupId);
+    wireObj.sender_credential = cst_encode_list_prim_u_8_strict(
+      apiObj.senderCredential,
+    );
+    wireObj.plaintext = cst_encode_list_prim_u_8_strict(apiObj.plaintext);
+  }
+
+  @protected
   void cst_api_fill_to_wire_welcome_group_info_extensions(
     WelcomeGroupInfoExtensions apiObj,
     wire_cst_welcome_group_info_extensions wireObj,
@@ -1807,6 +1889,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_stashed_message(
+    StashedMessage self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer);
 
   @protected
@@ -1954,6 +2042,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_stashed_message(
+    List<StashedMessage> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_mls_capabilities(
     MlsCapabilities self,
     SseSerializer serializer,
@@ -2068,6 +2162,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_opt_box_autoadd_stashed_message(
+    StashedMessage? self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer);
 
   @protected
@@ -2124,6 +2224,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_staged_proposal_info(
     StagedProposalInfo self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_stashed_message(
+    StashedMessage self,
     SseSerializer serializer,
   );
 
@@ -3036,6 +3142,36 @@ class RustLibWire implements BaseWire {
               ffi.Pointer<wire_cst_list_prim_u_8_loose>,
               ffi.Pointer<ffi.Uint32>,
             )
+          >();
+
+  void wire__crate__api__engine__MlsEngine_delete_stashed_message(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> stash_id,
+  ) {
+    return _wire__crate__api__engine__MlsEngine_delete_stashed_message(
+      port_,
+      that,
+      stash_id,
+    );
+  }
+
+  late final _wire__crate__api__engine__MlsEngine_delete_stashed_messagePtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+          )
+        >
+      >(
+        'frbgen_openmls_wire__crate__api__engine__MlsEngine_delete_stashed_message',
+      );
+  late final _wire__crate__api__engine__MlsEngine_delete_stashed_message =
+      _wire__crate__api__engine__MlsEngine_delete_stashed_messagePtr
+          .asFunction<
+            void Function(int, int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
           >();
 
   void wire__crate__api__engine__MlsEngine_export_group_context(
@@ -4278,6 +4414,48 @@ class RustLibWire implements BaseWire {
             )
           >();
 
+  void wire__crate__api__engine__MlsEngine_process_message_stashed(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_loose> group_id_bytes,
+    ffi.Pointer<wire_cst_list_prim_u_8_loose> message_bytes,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> stash_id,
+  ) {
+    return _wire__crate__api__engine__MlsEngine_process_message_stashed(
+      port_,
+      that,
+      group_id_bytes,
+      message_bytes,
+      stash_id,
+    );
+  }
+
+  late final _wire__crate__api__engine__MlsEngine_process_message_stashedPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_loose>,
+            ffi.Pointer<wire_cst_list_prim_u_8_loose>,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+          )
+        >
+      >(
+        'frbgen_openmls_wire__crate__api__engine__MlsEngine_process_message_stashed',
+      );
+  late final _wire__crate__api__engine__MlsEngine_process_message_stashed =
+      _wire__crate__api__engine__MlsEngine_process_message_stashedPtr
+          .asFunction<
+            void Function(
+              int,
+              int,
+              ffi.Pointer<wire_cst_list_prim_u_8_loose>,
+              ffi.Pointer<wire_cst_list_prim_u_8_loose>,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+            )
+          >();
+
   void wire__crate__api__engine__MlsEngine_process_message_with_inspect(
     int port_,
     int that,
@@ -4967,6 +5145,49 @@ class RustLibWire implements BaseWire {
               int,
             )
           >();
+
+  void wire__crate__api__engine__MlsEngine_stashed_message(
+    int port_,
+    int that,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> stash_id,
+  ) {
+    return _wire__crate__api__engine__MlsEngine_stashed_message(
+      port_,
+      that,
+      stash_id,
+    );
+  }
+
+  late final _wire__crate__api__engine__MlsEngine_stashed_messagePtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Void Function(
+            ffi.Int64,
+            ffi.UintPtr,
+            ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+          )
+        >
+      >('frbgen_openmls_wire__crate__api__engine__MlsEngine_stashed_message');
+  late final _wire__crate__api__engine__MlsEngine_stashed_message =
+      _wire__crate__api__engine__MlsEngine_stashed_messagePtr
+          .asFunction<
+            void Function(int, int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)
+          >();
+
+  void wire__crate__api__engine__MlsEngine_stashed_messages(
+    int port_,
+    int that,
+  ) {
+    return _wire__crate__api__engine__MlsEngine_stashed_messages(port_, that);
+  }
+
+  late final _wire__crate__api__engine__MlsEngine_stashed_messagesPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.UintPtr)>>(
+        'frbgen_openmls_wire__crate__api__engine__MlsEngine_stashed_messages',
+      );
+  late final _wire__crate__api__engine__MlsEngine_stashed_messages =
+      _wire__crate__api__engine__MlsEngine_stashed_messagesPtr
+          .asFunction<void Function(int, int)>();
 
   void wire__crate__api__engine__MlsEngine_swap_members(
     int port_,
@@ -5699,6 +5920,18 @@ class RustLibWire implements BaseWire {
       _cst_new_box_autoadd_staged_proposal_infoPtr
           .asFunction<ffi.Pointer<wire_cst_staged_proposal_info> Function()>();
 
+  ffi.Pointer<wire_cst_stashed_message> cst_new_box_autoadd_stashed_message() {
+    return _cst_new_box_autoadd_stashed_message();
+  }
+
+  late final _cst_new_box_autoadd_stashed_messagePtr =
+      _lookup<
+        ffi.NativeFunction<ffi.Pointer<wire_cst_stashed_message> Function()>
+      >('frbgen_openmls_cst_new_box_autoadd_stashed_message');
+  late final _cst_new_box_autoadd_stashed_message =
+      _cst_new_box_autoadd_stashed_messagePtr
+          .asFunction<ffi.Pointer<wire_cst_stashed_message> Function()>();
+
   ffi.Pointer<ffi.Uint32> cst_new_box_autoadd_u_32(int value) {
     return _cst_new_box_autoadd_u_32(value);
   }
@@ -5910,6 +6143,21 @@ class RustLibWire implements BaseWire {
           .asFunction<
             ffi.Pointer<wire_cst_list_staged_proposal_info> Function(int)
           >();
+
+  ffi.Pointer<wire_cst_list_stashed_message> cst_new_list_stashed_message(
+    int len,
+  ) {
+    return _cst_new_list_stashed_message(len);
+  }
+
+  late final _cst_new_list_stashed_messagePtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Pointer<wire_cst_list_stashed_message> Function(ffi.Int32)
+        >
+      >('frbgen_openmls_cst_new_list_stashed_message');
+  late final _cst_new_list_stashed_message = _cst_new_list_stashed_messagePtr
+      .asFunction<ffi.Pointer<wire_cst_list_stashed_message> Function(int)>();
 
   int dummy_method_to_enforce_bundling() {
     return _dummy_method_to_enforce_bundling();
@@ -6157,6 +6405,16 @@ final class wire_cst_staged_commit_info extends ffi.Struct {
   external ffi.Pointer<wire_cst_list_mls_external_sender_info> external_senders;
 }
 
+final class wire_cst_stashed_message extends ffi.Struct {
+  external ffi.Pointer<wire_cst_list_prim_u_8_strict> stash_id;
+
+  external ffi.Pointer<wire_cst_list_prim_u_8_strict> group_id;
+
+  external ffi.Pointer<wire_cst_list_prim_u_8_strict> sender_credential;
+
+  external ffi.Pointer<wire_cst_list_prim_u_8_strict> plaintext;
+}
+
 final class wire_cst_list_mls_ciphersuite extends ffi.Struct {
   external ffi.Pointer<ffi.Int32> ptr;
 
@@ -6180,6 +6438,13 @@ final class wire_cst_mls_pending_proposal_info extends ffi.Struct {
 
 final class wire_cst_list_mls_pending_proposal_info extends ffi.Struct {
   external ffi.Pointer<wire_cst_mls_pending_proposal_info> ptr;
+
+  @ffi.Int32()
+  external int len;
+}
+
+final class wire_cst_list_stashed_message extends ffi.Struct {
+  external ffi.Pointer<wire_cst_stashed_message> ptr;
 
   @ffi.Int32()
   external int len;

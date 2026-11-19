@@ -60,7 +60,8 @@ const _packageName = 'openmls';
 const _assetId = 'openmls';
 
 /// GitHub repository for downloading releases.
-const _githubRepo = 'djx-y-z/openmls_dart';
+// the eko fork, whose crate has the stash API upstream's binaries lack
+const _githubRepo = 'eko-network/openmls_dart';
 
 /// Rust crate name (used for library filenames and release tags).
 const _crateName = 'openmls_frb';
