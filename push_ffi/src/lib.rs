@@ -15,18 +15,23 @@ use std::ffi::{CStr, CString, c_char};
 use std::ptr;
 
 use futures::executor::block_on;
-use openmls_frb::api::engine::{MlsEngine, mls_message_content_type, mls_message_extract_group_id};
+use openmls_frb::api::credential::MlsCredential;
+use openmls_frb::api::engine::{
+    MlsEngine, StashedMessage, mls_message_content_type, mls_message_extract_group_id,
+};
 
 pub struct OpenmlsPush {
     engine: MlsEngine,
 }
 
-/// The application message was stashed now or by an earlier call.
+/// The application message was stashed now.
 pub const OPENMLS_PUSH_STASHED: i32 = 0;
 /// A commit or proposal, nothing was changed.
 pub const OPENMLS_PUSH_NOT_APPLICATION: i32 = 1;
 /// Nothing was changed, the error says why.
 pub const OPENMLS_PUSH_ERROR: i32 = -1;
+/// The application message was stashed by an earlier call.
+pub const OPENMLS_PUSH_ALREADY_STASHED: i32 = 2;
 
 /// # Safety
 /// `err` is null or writable.
@@ -98,13 +103,46 @@ pub unsafe extern "C" fn openmls_push_close(push: *mut OpenmlsPush) {
     let _ = block_on(push.engine.close());
 }
 
+/// Writes the id of the group the MLS message `message` is for, which needs
+/// nothing but the message. Returns `OPENMLS_PUSH_ERROR` with `err` for what is
+/// no MLS group message, e.g. a welcome.
+///
+/// # Safety
+/// `message` points to `message_len` bytes and every out pointer is null or
+/// writable.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn openmls_push_group_id(
+    message: *const u8,
+    message_len: usize,
+    group_id: *mut *mut u8,
+    group_id_len: *mut usize,
+    err: *mut *mut c_char,
+) -> i32 {
+    if message.is_null() {
+        unsafe { set_error(err, "message is required".into()) };
+        return OPENMLS_PUSH_ERROR;
+    }
+    let message = unsafe { std::slice::from_raw_parts(message, message_len) }.to_vec();
+    match mls_message_extract_group_id(message) {
+        Ok(group) => {
+            unsafe { set_bytes(group_id, group_id_len, group) };
+            0
+        }
+        Err(e) => {
+            unsafe { set_error(err, e) };
+            OPENMLS_PUSH_ERROR
+        }
+    }
+}
+
 /// Applies the MLS message `message` when it is an application message,
 /// stashing its plaintext under `stash_id`, the id the app stores it under.
 ///
-/// Returns `OPENMLS_PUSH_STASHED` with the plaintext, also for a message an
-/// earlier call stashed, `OPENMLS_PUSH_NOT_APPLICATION` for a commit or
+/// Returns `OPENMLS_PUSH_STASHED`, or `OPENMLS_PUSH_ALREADY_STASHED` for a
+/// message an earlier call stashed, with the plaintext and the identity of
+/// the sender's credential, `OPENMLS_PUSH_NOT_APPLICATION` for a commit or
 /// proposal, and `OPENMLS_PUSH_ERROR` with `err` otherwise, e.g. for a message
-/// the app already applied. The group id is written for the first two.
+/// the app already applied. The group id is written for all but errors.
 ///
 /// # Safety
 /// `push` came from `openmls_push_open`, `message` points to `message_len`
@@ -118,6 +156,8 @@ pub unsafe extern "C" fn openmls_push_receive(
     stash_id: *const c_char,
     plaintext: *mut *mut u8,
     plaintext_len: *mut usize,
+    sender: *mut *mut u8,
+    sender_len: *mut usize,
     group_id: *mut *mut u8,
     group_id_len: *mut usize,
     err: *mut *mut c_char,
@@ -137,12 +177,22 @@ pub unsafe extern "C" fn openmls_push_receive(
     };
 
     match receive(engine, message, stash_id) {
-        Ok(Received::Stashed { group, bytes }) => {
+        Ok(Received::Stashed {
+            group,
+            identity,
+            bytes,
+            earlier,
+        }) => {
             unsafe {
                 set_bytes(group_id, group_id_len, group);
+                set_bytes(sender, sender_len, identity);
                 set_bytes(plaintext, plaintext_len, bytes);
             }
-            OPENMLS_PUSH_STASHED
+            if earlier {
+                OPENMLS_PUSH_ALREADY_STASHED
+            } else {
+                OPENMLS_PUSH_STASHED
+            }
         }
         Ok(Received::NotApplication { group }) => {
             unsafe { set_bytes(group_id, group_id_len, group) };
@@ -156,26 +206,44 @@ pub unsafe extern "C" fn openmls_push_receive(
 }
 
 enum Received {
-    Stashed { group: Vec<u8>, bytes: Vec<u8> },
-    NotApplication { group: Vec<u8> },
+    Stashed {
+        group: Vec<u8>,
+        identity: Vec<u8>,
+        bytes: Vec<u8>,
+        earlier: bool,
+    },
+    NotApplication {
+        group: Vec<u8>,
+    },
 }
 
 fn receive(engine: &MlsEngine, message: Vec<u8>, stash_id: String) -> Result<Received, String> {
     let group = mls_message_extract_group_id(message.clone())?;
     if let Some(stashed) = block_on(engine.stashed_message(stash_id.clone()))? {
-        return Ok(Received::Stashed {
-            group,
-            bytes: stashed.plaintext,
-        });
+        return stashed_now_or_earlier(group, stashed, true);
     }
     if mls_message_content_type(message.clone())? != "application" {
         return Ok(Received::NotApplication { group });
     }
-    let processed = block_on(engine.process_message_stashed(group.clone(), message, stash_id))?;
-    let bytes = processed
-        .application_message
-        .ok_or("An application message without content")?;
-    Ok(Received::Stashed { group, bytes })
+    block_on(engine.process_message_stashed(group.clone(), message, stash_id.clone()))?;
+    // read back for the sender's credential, which the result leaves out
+    let stashed = block_on(engine.stashed_message(stash_id))?
+        .ok_or("An application message that was not stashed")?;
+    stashed_now_or_earlier(group, stashed, false)
+}
+
+fn stashed_now_or_earlier(
+    group: Vec<u8>,
+    stashed: StashedMessage,
+    earlier: bool,
+) -> Result<Received, String> {
+    let identity = MlsCredential::deserialize(stashed.sender_credential)?.identity()?;
+    Ok(Received::Stashed {
+        group,
+        identity,
+        bytes: stashed.plaintext,
+        earlier,
+    })
 }
 
 /// # Safety

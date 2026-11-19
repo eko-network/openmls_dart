@@ -35,6 +35,7 @@ fn member(name: &str, db_path: &str, key: &[u8]) -> Member {
 struct Received {
     rc: i32,
     plaintext: Option<Vec<u8>>,
+    sender: Option<Vec<u8>>,
     group: Option<Vec<u8>>,
     err: Option<String>,
 }
@@ -42,6 +43,7 @@ struct Received {
 fn receive(push: *mut OpenmlsPush, message: &[u8], stash_id: &str) -> Received {
     let id = CString::new(stash_id).unwrap();
     let (mut pt, mut pt_len, mut gid, mut gid_len) = (ptr::null_mut(), 0, ptr::null_mut(), 0);
+    let (mut sender, mut sender_len) = (ptr::null_mut(), 0);
     let mut err: *mut c_char = ptr::null_mut();
     let rc = unsafe {
         openmls_push_receive(
@@ -51,6 +53,8 @@ fn receive(push: *mut OpenmlsPush, message: &[u8], stash_id: &str) -> Received {
             id.as_ptr(),
             &mut pt,
             &mut pt_len,
+            &mut sender,
+            &mut sender_len,
             &mut gid,
             &mut gid_len,
             &mut err,
@@ -73,6 +77,7 @@ fn receive(push: *mut OpenmlsPush, message: &[u8], stash_id: &str) -> Received {
     Received {
         rc,
         plaintext: take(pt, pt_len),
+        sender: take(sender, sender_len),
         group: take(gid, gid_len),
         err,
     }
@@ -137,12 +142,14 @@ fn applies_and_stashes_only_application_messages() {
     let first = receive(push, &hi, "a");
     assert_eq!(first.rc, OPENMLS_PUSH_STASHED);
     assert_eq!(first.plaintext.as_deref(), Some(&b"hi"[..]));
+    assert_eq!(first.sender.as_deref(), Some(&b"alice"[..]));
     assert_eq!(first.group.as_deref(), Some(&group[..]));
 
     // e.g. a second push for the same inbox entry, the key is gone by now
     let again = receive(push, &hi, "a");
-    assert_eq!(again.rc, OPENMLS_PUSH_STASHED);
+    assert_eq!(again.rc, OPENMLS_PUSH_ALREADY_STASHED);
     assert_eq!(again.plaintext.as_deref(), Some(&b"hi"[..]));
+    assert_eq!(again.sender.as_deref(), Some(&b"alice"[..]));
 
     let commit = block_on(
         alice
@@ -154,6 +161,23 @@ fn applies_and_stashes_only_application_messages() {
     let left = receive(push, &commit, "b");
     assert_eq!(left.rc, OPENMLS_PUSH_NOT_APPLICATION);
     assert_eq!(left.group.as_deref(), Some(&group[..]));
+
+    let (mut gid, mut gid_len) = (ptr::null_mut(), 0);
+    let rc = unsafe {
+        openmls_push_group_id(
+            hi.as_ptr(),
+            hi.len(),
+            &mut gid,
+            &mut gid_len,
+            ptr::null_mut(),
+        )
+    };
+    assert_eq!(rc, 0);
+    assert_eq!(
+        unsafe { std::slice::from_raw_parts(gid, gid_len) },
+        &group[..]
+    );
+    unsafe { openmls_push_free_bytes(gid, gid_len) };
 
     let garbage = receive(push, b"not mls", "c");
     assert_eq!(garbage.rc, OPENMLS_PUSH_ERROR);

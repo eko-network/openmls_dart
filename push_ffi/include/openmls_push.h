@@ -8,6 +8,7 @@
 #define OPENMLS_PUSH_STASHED 0
 #define OPENMLS_PUSH_NOT_APPLICATION 1
 #define OPENMLS_PUSH_ERROR -1
+#define OPENMLS_PUSH_ALREADY_STASHED 2
 
 typedef struct OpenmlsPush OpenmlsPush;
 
@@ -16,9 +17,14 @@ OpenmlsPush *openmls_push_open(const char *db_path, const uint8_t *key,
 
 void openmls_push_close(OpenmlsPush *push);
 
+int32_t openmls_push_group_id(const uint8_t *message, size_t message_len,
+                              uint8_t **group_id, size_t *group_id_len,
+                              char **err);
+
 int32_t openmls_push_receive(OpenmlsPush *push, const uint8_t *message,
                              size_t message_len, const char *stash_id,
                              uint8_t **plaintext, size_t *plaintext_len,
+                             uint8_t **sender, size_t *sender_len,
                              uint8_t **group_id, size_t *group_id_len,
                              char **err);
 

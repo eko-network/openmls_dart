@@ -8,7 +8,7 @@
 # On Windows CI (Git Bash), use cmd to run fvm.bat from PATH:
 # Example: make build ARGS="--target x86_64-pc-windows-msvc" FVM="cmd //c fvm"
 
-.PHONY: build-push-ios push-xcframework help setup setup-fvm setup-rust-tools setup-frb-codegen setup-android setup-web setup-fuzz codegen regen build build-android build-ios build-web run-example-web test-web test-example test-example-ci test-example-web doctor drive-example build-example coverage-example create-consumer package-example-android package-example-ios package-example-macos verify-example-coverage verify-example-library test coverage analyze format format-check get clean version get-version check-new-openmls-version check-upstream-advisories check-exists-openmls-frb-release check-template-updates update-template check-targets check-msrv third-party-notices verify-third-party-notices verify-frb-pins verify-pub-limits verify-feature-graph verify-android-alignment verify-release-artifacts verify-library-loads actionlint rust-audit rust-deny rust-check rust-check-ios rust-test rust-clippy rust-clippy-web rust-doc rust-geiger fuzz fuzz-list fuzz-seed doc publish publish-dry-run rust-update update-changelog update-evidence release-frb release setup-repo-protections
+.PHONY: build-push-ios push-xcframework push-test push-clippy help setup setup-fvm setup-rust-tools setup-frb-codegen setup-android setup-web setup-fuzz codegen regen build build-android build-ios build-web run-example-web test-web test-example test-example-ci test-example-web doctor drive-example build-example coverage-example create-consumer package-example-android package-example-ios package-example-macos verify-example-coverage verify-example-library test coverage analyze format format-check get clean version get-version check-new-openmls-version check-upstream-advisories check-exists-openmls-frb-release check-template-updates update-template check-targets check-msrv third-party-notices verify-third-party-notices verify-frb-pins verify-pub-limits verify-feature-graph verify-android-alignment verify-release-artifacts verify-library-loads actionlint rust-audit rust-deny rust-check rust-check-ios rust-test rust-clippy rust-clippy-web rust-doc rust-geiger fuzz fuzz-list fuzz-seed doc publish publish-dry-run rust-update update-changelog update-evidence release-frb release setup-repo-protections
 
 # FVM command - can be overridden to provide full path on Windows CI
 FVM ?= fvm
@@ -458,6 +458,12 @@ push-xcframework: build-push-ios
 		-output $(PUSH_XCFRAMEWORK)
 	@echo ""
 	@echo "Built $(PUSH_XCFRAMEWORK)"
+
+push-test:
+	cargo test --manifest-path push_ffi/Cargo.toml $(ARGS)
+
+push-clippy:
+	cargo clippy --manifest-path push_ffi/Cargo.toml --all-targets -- -D warnings
 
 build-web:
 	@echo "Building WASM for web..."
